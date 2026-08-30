@@ -5,9 +5,19 @@ import asyncio
 # Import your tools from the other file in the same folder
 from websocket_stream import manager, stream_radar_data, sim_state
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 app = FastAPI(title="TRINETRA Backend API")
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 1. Start the background stream when the server boots
 @app.on_event("startup")
