@@ -1,11 +1,10 @@
 import asyncio
+import json
 import random
-import time
+from datetime import datetime
 from typing import List
 from fastapi import WebSocket
 
-
-# 1. Connection Manager
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -13,48 +12,58 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-        print(f"[SYSTEM] Screen connected. Total: {len(self.active_connections)}")
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-        print(f"[SYSTEM] Screen disconnected. Total: {len(self.active_connections)}")
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
-    async def broadcast_json(self, data: dict):
-        for connection in self.active_connections:
-            await connection.send_json(data)
+    async def broadcast(self, message: str):
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(message)
+            except Exception:
+                self.disconnect(connection)
 
-
-# Create a single instance to be used across the app
 manager = ConnectionManager()
 
-# A global dictionary to let us change the simulation state later via REST API
+# Global state for threat injection
 sim_state = {
-    "current_target": "Scanning..."
+    "override_threat": None
 }
 
+def generate_radar_frame():
+    threat_classes = ["drone", "human", "vehicle", "bird"]
+    selected_class = sim_state["override_threat"] or random.choice(threat_classes)
 
-# 2. Background Task
+    # 20x20 Range-Doppler matrix
+    range_doppler = [
+        [round(random.uniform(0.05, 0.95), 3) for _ in range(20)]
+        for _ in range(20)
+    ]
+
+    # 30x40 Spectrogram matrix
+    spectrogram = [
+        [round(random.uniform(0.01, 0.85), 3) for _ in range(40)]
+        for _ in range(30)
+    ]
+
+    threat_data = {
+        "class": selected_class,
+        "confidence": round(random.uniform(0.82, 0.99), 2),
+        "bearing": round(random.uniform(10.0, 350.0), 1),
+        "range_km": round(random.uniform(0.5, 4.8), 2),
+        "velocity_mps": round(random.uniform(-15.0, 35.0), 1),
+    }
+
+    return {
+        "range_doppler": range_doppler,
+        "spectrogram": spectrogram,
+        "threat": threat_data,
+        "timestamp": datetime.now().strftime("%H:%M:%S")
+    }
+
 async def stream_radar_data():
-    """Runs forever in the background, pushing data to the frontend."""
     while True:
-        if len(manager.active_connections) > 0:
-
-            # If we haven't forced a specific target, pick a random one
-            if sim_state["current_target"] == "Scanning...":
-                target = random.choice(["Bird", "Civilian Drone", "Unknown"])
-            else:
-                target = sim_state["current_target"]
-
-            # Construct the TRINETRA payload
-            payload = {
-                "timestamp": time.strftime("%H:%M:%S"),
-                "classification": target,
-                "confidence": round(random.uniform(75.0, 99.9), 1),
-                "range_meters": random.randint(50, 1000),
-                "velocity_mps": random.randint(0, 30)
-            }
-
-            await manager.broadcast_json(payload)
-
-        # 2 frames per second
+        frame = generate_radar_frame()
+        await manager.broadcast(json.dumps(frame))
         await asyncio.sleep(0.5)
