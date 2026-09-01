@@ -1,7 +1,6 @@
 """
 Streamlit frontend for Micro-Doppler Radar Threat Detection.
 Polls the backend REST endpoint (/latest_frame) every 0.5 seconds and displays:
-- Radar sweep (scatter plot of range vs velocity)
 - Spectrogram heatmap
 - Threat classification alerts
 
@@ -11,9 +10,7 @@ card-based feature grid, and a real site footer — rather than a raw dashboard.
 import streamlit as st
 import requests
 import numpy as np
-import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 
@@ -322,7 +319,6 @@ st.markdown(
         <div class="site-logo">◈ MDR<span>-1</span> RADAR SYSTEMS</div>
         <div class="site-links">
             <a href="#" class="active">Overview</a>
-            <a href="#">Sweep</a>
             <a href="#">Spectrogram</a>
             <a href="#">Classification</a>
             <a href="#">Docs</a>
@@ -342,8 +338,8 @@ st.markdown(
         <div class="hero-eyebrow"><span class="status-dot"></span>SECTOR SWEEP ACTIVE</div>
         <div class="hero-title">Micro-Doppler Radar<br/>Threat Detection Platform</div>
         <div class="hero-subtitle">
-            Real-time range-Doppler sweeps, spectrogram analysis, and automated
-            threat classification streamed live from the sensor backend.
+            Real-time spectrogram analysis and automated threat classification
+            streamed live from the sensor backend.
         </div>
     </div>
     """,
@@ -392,62 +388,23 @@ PLOTLY_LAYOUT = dict(
 )
 
 # -----------------------------------------------------------------------------
-# Section header + three-column feature grid
+# Section header + two-column feature grid
 # -----------------------------------------------------------------------------
 st.markdown(
     """
     <div class="section-wrap" style="padding-bottom: 10px;">
         <div class="section-header">
             <div class="section-kicker">Live sensor output</div>
-            <div class="section-title">Sweep · Spectrogram · Classification</div>
+            <div class="section-title">Spectrogram · Classification</div>
         </div>
     """,
     unsafe_allow_html=True,
 )
 
-col1, col2, col3 = st.columns([1, 1, 1])
-
-# --- Radar Sweep (Range-Doppler scatter) ---
-with col1:
-    st.markdown('<div class="site-card">', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="card-title"><span class="dot"></span>RANGE / VELOCITY SWEEP</p>'
-        '<p class="card-desc">Downsampled range-Doppler map from the live sensor frame.</p>',
-        unsafe_allow_html=True,
-    )
-
-    range_doppler = np.array(frame["range_doppler"])
-    rows, cols = range_doppler.shape
-    step = 2
-    points = []
-    for i in range(0, rows, step):
-        for j in range(0, cols, step):
-            range_km = (i / rows) * 5.0
-            velocity = (j / cols) * 60.0 - 20.0
-            intensity = range_doppler[i, j]
-            points.append({"range": range_km, "velocity": velocity, "intensity": intensity})
-    df_rd = pd.DataFrame(points)
-
-    fig_rd = px.scatter(
-        df_rd,
-        x="range",
-        y="velocity",
-        color="intensity",
-        color_continuous_scale=[[0, "#04231c"], [0.5, ACCENT_DIM], [1, ACCENT]],
-        range_x=[0, 5],
-        range_y=[-20, 40],
-        labels={"range": "Range (km)", "velocity": "Velocity (m/s)"},
-        height=300,
-    )
-    fig_rd.update_traces(marker=dict(size=5, line=dict(width=0)))
-    fig_rd.update_layout(**PLOTLY_LAYOUT)
-    fig_rd.update_xaxes(gridcolor=PANEL_BORDER, zerolinecolor=PANEL_BORDER)
-    fig_rd.update_yaxes(gridcolor=PANEL_BORDER, zerolinecolor=PANEL_BORDER)
-    st.plotly_chart(fig_rd, use_container_width=True, config={"displayModeBar": False})
-    st.markdown('</div>', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
 
 # --- Spectrogram Heatmap ---
-with col2:
+with col1:
     st.markdown('<div class="site-card">', unsafe_allow_html=True)
     st.markdown(
         '<p class="card-title"><span class="dot"></span>DOPPLER SPECTROGRAM</p>'
@@ -468,7 +425,7 @@ with col2:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- Threat Alerts ---
-with col3:
+with col2:
     st.markdown('<div class="site-card">', unsafe_allow_html=True)
     st.markdown(
         '<p class="card-title"><span class="dot"></span>THREAT CLASSIFICATION</p>'
@@ -510,12 +467,11 @@ st.markdown(
     <div class="site-footer">
         <div class="footer-col" style="flex: 1.4;">
             <h4>◈ MDR-1 RADAR SYSTEMS</h4>
-            <p>Micro-Doppler sensor console for range-Doppler sweeps, spectrogram
-            analysis, and live threat classification.</p>
+            <p>Micro-Doppler sensor console for spectrogram analysis and live
+            threat classification.</p>
         </div>
         <div class="footer-col">
             <h4>SYSTEM</h4>
-            <div>Sweep</div>
             <div>Spectrogram</div>
             <div>Classification</div>
         </div>
