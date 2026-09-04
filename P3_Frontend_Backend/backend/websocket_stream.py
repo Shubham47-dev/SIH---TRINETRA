@@ -5,7 +5,6 @@ from typing import List
 from fastapi import WebSocket
 
 
-# 1. Connection Manager
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -24,28 +23,24 @@ class ConnectionManager:
             await connection.send_json(data)
 
 
-# Create a single instance to be used across the app
 manager = ConnectionManager()
 
-# A global dictionary to let us change the simulation state later via REST API
 sim_state = {
     "current_target": "Scanning..."
 }
 
 
-# 2. Background Task
+#Background Task
 async def stream_radar_data():
     """Runs forever in the background, pushing data to the frontend."""
     while True:
         if len(manager.active_connections) > 0:
 
-            # If we haven't forced a specific target, pick a random one
             if sim_state["current_target"] == "Scanning...":
                 target = random.choice(["Bird", "Civilian Drone", "Unknown"])
             else:
                 target = sim_state["current_target"]
 
-            # Construct the TRINETRA payload
             payload = {
                 "timestamp": time.strftime("%H:%M:%S"),
                 "classification": target,
@@ -56,5 +51,4 @@ async def stream_radar_data():
 
             await manager.broadcast_json(payload)
 
-        # 2 frames per second
         await asyncio.sleep(0.5)

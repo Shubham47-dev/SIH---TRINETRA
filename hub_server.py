@@ -8,7 +8,7 @@ from scipy.special import softmax
 from fastapi import FastAPI, UploadFile, File
 from datetime import datetime
 
-VOLUME_THRESHOLD = 0.015   
+VOLUME_THRESHOLD = 0.015 
 CONF_THRESHOLD = 75.0      
 
 app = FastAPI(title="TRINETRA ONNX Command Hub")

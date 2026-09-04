@@ -2,30 +2,25 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 import asyncio
 
-# Import your tools from the other file in the same folder
 from websocket_stream import manager, stream_radar_data, sim_state
 
 app = FastAPI(title="TRINETRA Backend API")
 
 
 
-# 1. Start the background stream when the server boots
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(stream_radar_data())
 
-# 2. The WebSocket Route (For the React Frontend to connect to)
 @app.websocket("/ws/radar")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            await websocket.receive_text() # Keeps connection open
+            await websocket.receive_text() 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# 3. REST API Endpoint (Hackathon Command Button)
-# A POST request here changes the behavior of the background stream!
 @app.post("/api/inject-threat")
 async def inject_threat():
     sim_state["current_target"] = "ARMED PAYLOAD DRONE"
@@ -36,7 +31,7 @@ async def reset_radar():
     sim_state["current_target"] = "Scanning..."
     return {"message": "Radar reset to normal scanning mode"}
 
-# 4. Dummy Test Page
+#Dummy Test Page
 html_test_page = """
 <!DOCTYPE html>
 <html>

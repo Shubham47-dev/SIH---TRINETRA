@@ -14,18 +14,15 @@ import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 
-# -----------------------------------------------------------------------------
 # Configuration
-# -----------------------------------------------------------------------------
 BACKEND_URL = "http://localhost:8000"
-REFRESH_INTERVAL_MS = 500  # Poll every 0.5 seconds
+REFRESH_INTERVAL_MS = 500  
 
-# Palette — dark defense-tech product site theme
 BG = "#060a0c"
 BG_ALT = "#0a1012"
 PANEL_BG = "#0d1416"
 PANEL_BORDER = "#1e2b2a"
-ACCENT = "#00ffb2"       # phosphor green
+ACCENT = "#00ffb2"       
 ACCENT_DIM = "#0a5c46"
 WARN = "#ff3b3b"
 TEXT = "#e6f7f1"
@@ -40,12 +37,9 @@ THREAT_STYLE = {
 
 st.set_page_config(page_title="TACTICAL RADAR // MDR-1", layout="wide", page_icon="🎯")
 
-# Auto-refresh the app
 st_autorefresh(interval=REFRESH_INTERVAL_MS, key="radar_refresh")
 
-# -----------------------------------------------------------------------------
 # Global styling
-# -----------------------------------------------------------------------------
 st.markdown(
     f"""
     <style>
@@ -309,9 +303,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# -----------------------------------------------------------------------------
 # Nav bar
-# -----------------------------------------------------------------------------
 now_str = datetime.now().strftime("%H:%M:%S")
 st.markdown(
     f"""
@@ -329,9 +321,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# -----------------------------------------------------------------------------
 # Hero section
-# -----------------------------------------------------------------------------
 st.markdown(
     """
     <div class="hero">
@@ -346,9 +336,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# -----------------------------------------------------------------------------
-# Fetch latest frame from backend
-# -----------------------------------------------------------------------------
 @st.cache_data(ttl=0.5)
 def get_latest_frame():
     try:
@@ -379,7 +366,6 @@ if frame is None:
     )
     st.stop()
 
-# Shared plotly dark template
 PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
@@ -387,9 +373,6 @@ PLOTLY_LAYOUT = dict(
     margin=dict(l=10, r=10, t=10, b=10),
 )
 
-# -----------------------------------------------------------------------------
-# Section header + two-column feature grid
-# -----------------------------------------------------------------------------
 st.markdown(
     """
     <div class="section-wrap" style="padding-bottom: 10px;">
@@ -403,7 +386,6 @@ st.markdown(
 
 col1, col2 = st.columns([1, 1])
 
-# --- Spectrogram Heatmap ---
 with col1:
     st.markdown('<div class="site-card">', unsafe_allow_html=True)
     st.markdown(
@@ -424,7 +406,6 @@ with col1:
     st.plotly_chart(fig_spec, use_container_width=True, config={"displayModeBar": False})
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Threat Alerts ---
 with col2:
     st.markdown('<div class="site-card">', unsafe_allow_html=True)
     st.markdown(
@@ -459,9 +440,7 @@ with col2:
 
 st.markdown('</div>', unsafe_allow_html=True)  # close .section-wrap
 
-# -----------------------------------------------------------------------------
 # Site footer
-# -----------------------------------------------------------------------------
 st.markdown(
     f"""
     <div class="site-footer">

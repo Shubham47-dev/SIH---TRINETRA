@@ -4,7 +4,7 @@ import random
 import librosa
 import numpy as np
 
-# --- 1. DIRECTORY ROUTING ---
+# DIRECTORY ROUTING
 RAW_BASE = "ai_data/data/train"       
 OUT_BASE = "ai_data/spectrograms"     
 CLASSES = ["0_bird", "1_human", "2_drone_unarmed", "3_drone_payload", "4_ambient_noise"]

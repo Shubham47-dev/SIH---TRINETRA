@@ -3,7 +3,7 @@ import requests
 import time
 import pandas as pd
 
-# --- 1. PAGE CONFIGURATION ---
+# PAGE CONFIG
 st.set_page_config(
     page_title="TRINETRA | Command Center", 
     layout="wide", 
@@ -22,12 +22,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("👁️ TRINETRA: Acoustic Micro-Doppler C-UAS")
+st.title("PROJECT DHWANI: Acoustic Micro-Doppler C-UAS")
 st.markdown("### 📡 Live Sensor Telemetry (Edge Node 01)")
 st.markdown("---")
 
-# --- 2. DYNAMIC PLACEHOLDERS ---
-# These empty containers get overwritten every second to prevent the page from flickering
+# DYNAMIC PLACEHOLDERS
 status_placeholder = st.empty()
 chart_placeholder = st.empty()
 
@@ -41,7 +40,6 @@ def fetch_telemetry():
         return None
     return None
 
-# --- 3. RENDERING LOOP ---
 data = fetch_telemetry()
 
 if data:
@@ -50,7 +48,7 @@ if data:
     timestamp = data.get("timestamp", "N/A")
     details = data.get("details", {})
 
-    # TACTICAL COLOR LOGIC
+    # COLOR LOGIC
     if target == "Drone (Payload)":
         css_class = "threat-red"
         alert_msg = f"🚨 CRITICAL THREAT: {target.upper()} [{confidence}%]"
@@ -68,16 +66,13 @@ if data:
         alert_msg = f"✅ CLEAR: {target.upper()} [{confidence}%]"
         chart_color = "#00CC96"
 
-    # UPDATE THE BIG BANNER
     with status_placeholder.container():
         st.markdown(f"<div class='{css_class}'>{alert_msg}</div>", unsafe_allow_html=True)
         st.markdown(f"<p class='telemetry-text'>Last Packet Received: {timestamp}</p>", unsafe_allow_html=True)
 
-    # UPDATE THE 5-CLASS BAR CHART
     with chart_placeholder.container():
         if details:
             st.markdown("#### Acoustic Signature Probabilities")
-            # Convert dictionary to Pandas DataFrame for Streamlit's native charting
             df = pd.DataFrame({
                 "Classification": list(details.keys()),
                 "Probability (%)": list(details.values())
@@ -88,7 +83,6 @@ else:
     with status_placeholder.container():
         st.error("🔌 OFFLINE: Cannot connect to TRINETRA Command Hub. Ensure `hub_server.py` is running on port 8000.")
 
-# --- 4. ENGINE CYCLE ---
-# Pauses for exactly 1 second, then re-runs the entire script to pull new data
+# ENGINE CYCLE
 time.sleep(1.0)
 st.rerun()
